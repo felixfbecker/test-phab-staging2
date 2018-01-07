@@ -9,7 +9,6 @@ func Add(nums ...int) int {
 
 	return sum
 }
-<<<<<<< HEAD
 
 func Subtract(nums ...int) int {
 	diff := 0
@@ -20,5 +19,13 @@ func Subtract(nums ...int) int {
 
 	return diff
 }
-=======
->>>>>>> INIT
+
+func Divide(nums ...int) int {
+	val := 0
+
+	for _, n := range nums {
+		val /= n
+	}
+
+	return val
+}
