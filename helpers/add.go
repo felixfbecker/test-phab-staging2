@@ -9,6 +9,7 @@ func Add(nums ...int) int {
 
 	return sum
 }
+<<<<<<< HEAD
 
 func Subtract(nums ...int) int {
 	diff := 0
@@ -19,3 +20,5 @@ func Subtract(nums ...int) int {
 
 	return diff
 }
+=======
+>>>>>>> INIT
