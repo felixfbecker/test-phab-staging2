@@ -9,3 +9,13 @@ func Add(nums ...int) int {
 
 	return sum
 }
+
+func Subtract(nums ...int) int {
+	diff := 0
+
+	for _, n := range nums {
+		diff -= n
+	}
+
+	return diff
+}
