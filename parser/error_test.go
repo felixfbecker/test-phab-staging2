@@ -8,7 +8,7 @@
 // .src rather than .go so that they are not disturbed by gofmt runs.
 //
 // Expected errors are indicated in the test files by putting a comment
-// of the form /* ERROR "rx" */ immediately following an offending token.
+// of the form /* ERROR "rx" */ immediately following an offending token1.
 // The harness will verify that an error matching the regular expression
 // rx is reported at that source position.
 //
@@ -23,20 +23,22 @@
 package parser
 
 import (
-	"go/scanner"
-	"go/token"
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
+
+	"gitolite.sgdev.org/testing/scanner"
+
+	"gitolite.sgdev.org/testing/token"
 )
 
 const testdata = "testdata"
 
 // getFile assumes that each filename occurs at most once
-func getFile(fset *token.FileSet, filename string) (file *token.File) {
-	fset.Iterate(func(f *token.File) bool {
+func getFile(fset *token1.FileSet, filename string) (file *token1.File) {
+	fset.Iterate(func(f *token1.File) bool {
 		if f.Name() == filename {
 			if file != nil {
 				panic(filename + " used multiple times")
@@ -48,41 +50,41 @@ func getFile(fset *token.FileSet, filename string) (file *token.File) {
 	return file
 }
 
-func getPos(fset *token.FileSet, filename string, offset int) token.Pos {
+func getPos(fset *token1.FileSet, filename string, offset int) token1.Pos {
 	if f := getFile(fset, filename); f != nil {
 		return f.Pos(offset)
 	}
-	return token.NoPos
+	return token1.NoPos
 }
 
 // ERROR comments must be of the form /* ERROR "rx" */ and rx is
 // a regular expression that matches the expected error message.
 // The special form /* ERROR HERE "rx" */ must be used for error
-// messages that appear immediately after a token, rather than at
-// a token's position.
+// messages that appear immediately after a token1, rather than at
+// a token1's position.
 //
 var errRx = regexp.MustCompile(`^/\* *ERROR *(HERE)? *"([^"]*)" *\*/$`)
 
 // expectedErrors collects the regular expressions of ERROR comments found
 // in files and returns them as a map of error positions to error messages.
 //
-func expectedErrors(fset *token.FileSet, filename string, src []byte) map[token.Pos]string {
-	errors := make(map[token.Pos]string)
+func expectedErrors(fset *token1.FileSet, filename string, src []byte) map[token1.Pos]string {
+	errors := make(map[token1.Pos]string)
 
 	var s scanner.Scanner
 	// file was parsed already - do not add it again to the file
 	// set otherwise the position information returned here will
 	// not match the position information collected by the parser
 	s.Init(getFile(fset, filename), src, nil, scanner.ScanComments)
-	var prev token.Pos // position of last non-comment, non-semicolon token
-	var here token.Pos // position immediately after the token at position prev
+	var prev token1.Pos // position of last non-comment, non-semicolon token1
+	var here token1.Pos // position immediately after the token1 at position prev
 
 	for {
 		pos, tok, lit := s.Scan()
 		switch tok {
-		case token.EOF:
+		case token1.EOF:
 			return errors
-		case token.COMMENT:
+		case token1.COMMENT:
 			s := errRx.FindStringSubmatch(lit)
 			if len(s) == 3 {
 				pos := prev
@@ -93,13 +95,13 @@ func expectedErrors(fset *token.FileSet, filename string, src []byte) map[token.
 			}
 		default:
 			prev = pos
-			var l int // token length
+			var l int // token1 length
 			if tok.IsLiteral() {
 				l = len(lit)
 			} else {
 				l = len(tok.String())
 			}
-			here = prev + token.Pos(l)
+			here = prev + token1.Pos(l)
 		}
 	}
 }
@@ -107,10 +109,10 @@ func expectedErrors(fset *token.FileSet, filename string, src []byte) map[token.
 // compareErrors compares the map of expected error messages with the list
 // of found errors and reports discrepancies.
 //
-func compareErrors(t *testing.T, fset *token.FileSet, expected map[token.Pos]string, found scanner.ErrorList) {
+func compareErrors(t *testing.T, fset *token1.FileSet, expected map[token1.Pos]string, found scanner.ErrorList) {
 	for _, error := range found {
-		// error.Pos is a token.Position, but we want
-		// a token.Pos so we can do a map lookup
+		// error.Pos is a token1.Position, but we want
+		// a token1.Pos so we can do a map lookup
 		pos := getPos(fset, error.Pos.Filename, error.Pos.Offset)
 		if msg, found := expected[pos]; found {
 			// we expect a message at pos; check if it matches
@@ -150,7 +152,7 @@ func checkErrors(t *testing.T, filename string, input interface{}) {
 		return
 	}
 
-	fset := token.NewFileSet()
+	fset := token1.NewFileSet()
 	_, err = ParseFile(fset, filename, src, DeclarationErrors|AllErrors)
 	found, ok := err.(scanner.ErrorList)
 	if err != nil && !ok {

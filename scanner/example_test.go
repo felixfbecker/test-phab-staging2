@@ -7,23 +7,24 @@ package scanner_test
 import (
 	"fmt"
 	"go/scanner"
-	"go/token"
+
+	"gitolite.sgdev.org/testing/token"
 )
 
 func ExampleScanner_Scan() {
-	// src is the input that we want to tokenize.
+	// src is the input that we want to token1ize.
 	src := []byte("cos(x) + 1i*sin(x) // Euler")
 
 	// Initialize the scanner.
 	var s scanner.Scanner
-	fset := token.NewFileSet()                      // positions are relative to fset
+	fset := token1.NewFileSet()                     // positions are relative to fset
 	file := fset.AddFile("", fset.Base(), len(src)) // register input "file"
 	s.Init(file, src, nil /* no error handler */, scanner.ScanComments)
 
-	// Repeated calls to Scan yield the token sequence found in the input.
+	// Repeated calls to Scan yield the token1 sequence found in the input.
 	for {
 		pos, tok, lit := s.Scan()
-		if tok == token.EOF {
+		if tok == token1.EOF {
 			break
 		}
 		fmt.Printf("%s\t%s\t%q\n", fset.Position(pos), tok, lit)

@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package scanner implements a scanner for Go source text.
-// It takes a []byte as source which can then be tokenized
+// It takes a []byte as source which can then be token1ized
 // through repeated calls to the Scan method.
 //
 package scanner
@@ -11,19 +11,20 @@ package scanner
 import (
 	"bytes"
 	"fmt"
-	"go/token"
 	"path/filepath"
 	"strconv"
 	"unicode"
 	"unicode/utf8"
+
+	"gitolite.sgdev.org/testing/token"
 )
 
 // An ErrorHandler may be provided to Scanner.Init. If a syntax error is
 // encountered and a handler was installed, the handler is called with a
 // position and an error message. The position points to the beginning of
-// the offending token.
+// the offending token1.
 //
-type ErrorHandler func(pos token.Position, msg string)
+type ErrorHandler func(pos token1.Position, msg string)
 
 // A Scanner holds the scanner's internal state while processing
 // a given text. It can be allocated as part of another data
@@ -31,7 +32,7 @@ type ErrorHandler func(pos token.Position, msg string)
 //
 type Scanner struct {
 	// immutable state
-	file *token.File  // source file handle
+	file *token1.File // source file handle
 	dir  string       // directory portion of file.Name()
 	src  []byte       // source
 	err  ErrorHandler // error reporting; or nil
@@ -91,11 +92,11 @@ func (s *Scanner) next() {
 type Mode uint
 
 const (
-	ScanComments    Mode = 1 << iota // return comments as COMMENT tokens
+	ScanComments    Mode = 1 << iota // return comments as COMMENT token1s
 	dontInsertSemis                  // do not automatically insert semicolons - for testing only
 )
 
-// Init prepares the scanner s to tokenize the text src by setting the
+// Init prepares the scanner s to token1ize the text src by setting the
 // scanner at the beginning of src. The scanner uses the file set file
 // for position information and it adds line information for each line.
 // It is ok to re-use the same file when re-scanning the same file as
@@ -110,7 +111,7 @@ const (
 // Note that Init may call err if there is an error in the first character
 // of the file.
 //
-func (s *Scanner) Init(file *token.File, src []byte, err ErrorHandler, mode Mode) {
+func (s *Scanner) Init(file *token1.File, src []byte, err ErrorHandler, mode Mode) {
 	// Explicitly initialize all fields since a scanner may be reused.
 	if file.Size() != len(src) {
 		panic(fmt.Sprintf("file size (%d) does not match src len (%d)", file.Size(), len(src)))
@@ -221,7 +222,7 @@ func (s *Scanner) findLineEnd() bool {
 		s.next() // consume initial '/' again
 	}(s.offset - 1)
 
-	// read ahead until a newline, EOF, or non-comment token is found
+	// read ahead until a newline, EOF, or non-comment token1 is found
 	for s.ch == '/' || s.ch == '*' {
 		if s.ch == '/' {
 			//-style comment always contains a newline
@@ -245,7 +246,7 @@ func (s *Scanner) findLineEnd() bool {
 			return true
 		}
 		if s.ch != '/' {
-			// non-comment token
+			// non-comment token1
 			return false
 		}
 		s.next() // consume '/'
@@ -288,14 +289,14 @@ func (s *Scanner) scanMantissa(base int) {
 	}
 }
 
-func (s *Scanner) scanNumber(seenDecimalPoint bool) (token.Token, string) {
+func (s *Scanner) scanNumber(seenDecimalPoint bool) (token1.Token, string) {
 	// digitVal(s.ch) < 10
 	offs := s.offset
-	tok := token.INT
+	tok := token1.INT
 
 	if seenDecimalPoint {
 		offs--
-		tok = token.FLOAT
+		tok = token1.FLOAT
 		s.scanMantissa(10)
 		goto exponent
 	}
@@ -337,14 +338,14 @@ func (s *Scanner) scanNumber(seenDecimalPoint bool) (token.Token, string) {
 
 fraction:
 	if s.ch == '.' {
-		tok = token.FLOAT
+		tok = token1.FLOAT
 		s.next()
 		s.scanMantissa(10)
 	}
 
 exponent:
 	if s.ch == 'e' || s.ch == 'E' {
-		tok = token.FLOAT
+		tok = token1.FLOAT
 		s.next()
 		if s.ch == '-' || s.ch == '+' {
 			s.next()
@@ -357,7 +358,7 @@ exponent:
 	}
 
 	if s.ch == 'i' {
-		tok = token.IMAG
+		tok = token1.IMAG
 		s.next()
 	}
 
@@ -526,13 +527,13 @@ func (s *Scanner) skipWhitespace() {
 	}
 }
 
-// Helper functions for scanning multi-byte tokens such as >> += >>= .
+// Helper functions for scanning multi-byte token1s such as >> += >>= .
 // Different routines recognize different length tok_i based on matches
-// of ch_i. If a token ends in '=', the result is tok1 or tok3
+// of ch_i. If a token1 ends in '=', the result is tok1 or tok3
 // respectively. Otherwise, the result is tok0 if there was no other
 // matching character, or tok2 if the matching character was ch2.
 
-func (s *Scanner) switch2(tok0, tok1 token.Token) token.Token {
+func (s *Scanner) switch2(tok0, tok1 token1.Token) token1.Token {
 	if s.ch == '=' {
 		s.next()
 		return tok1
@@ -540,7 +541,7 @@ func (s *Scanner) switch2(tok0, tok1 token.Token) token.Token {
 	return tok0
 }
 
-func (s *Scanner) switch3(tok0, tok1 token.Token, ch2 rune, tok2 token.Token) token.Token {
+func (s *Scanner) switch3(tok0, tok1 token1.Token, ch2 rune, tok2 token1.Token) token1.Token {
 	if s.ch == '=' {
 		s.next()
 		return tok1
@@ -552,7 +553,7 @@ func (s *Scanner) switch3(tok0, tok1 token.Token, ch2 rune, tok2 token.Token) to
 	return tok0
 }
 
-func (s *Scanner) switch4(tok0, tok1 token.Token, ch2 rune, tok2, tok3 token.Token) token.Token {
+func (s *Scanner) switch4(tok0, tok1 token1.Token, ch2 rune, tok2, tok3 token1.Token) token1.Token {
 	if s.ch == '=' {
 		s.next()
 		return tok1
@@ -568,29 +569,29 @@ func (s *Scanner) switch4(tok0, tok1 token.Token, ch2 rune, tok2, tok3 token.Tok
 	return tok0
 }
 
-// Scan scans the next token and returns the token position, the token,
+// Scan scans the next token1 and returns the token1 position, the token1,
 // and its literal string if applicable. The source end is indicated by
-// token.EOF.
+// token1.EOF.
 //
-// If the returned token is a literal (token.IDENT, token.INT, token.FLOAT,
-// token.IMAG, token.CHAR, token.STRING) or token.COMMENT, the literal string
+// If the returned token1 is a literal (token1.IDENT, token1.INT, token1.FLOAT,
+// token1.IMAG, token1.CHAR, token1.STRING) or token1.COMMENT, the literal string
 // has the corresponding value.
 //
-// If the returned token is a keyword, the literal string is the keyword.
+// If the returned token1 is a keyword, the literal string is the keyword.
 //
-// If the returned token is token.SEMICOLON, the corresponding
+// If the returned token1 is token1.SEMICOLON, the corresponding
 // literal string is ";" if the semicolon was present in the source,
 // and "\n" if the semicolon was inserted because of a newline or
 // at EOF.
 //
-// If the returned token is token.ILLEGAL, the literal string is the
+// If the returned token1 is token1.ILLEGAL, the literal string is the
 // offending character.
 //
 // In all other cases, Scan returns an empty literal string.
 //
-// For more tolerant parsing, Scan will return a valid token if
+// For more tolerant parsing, Scan will return a valid token1 if
 // possible even if a syntax error was encountered. Thus, even
-// if the resulting token sequence contains no illegal tokens,
+// if the resulting token1 sequence contains no illegal token1s,
 // a client may not assume that no error occurred. Instead it
 // must check the scanner's ErrorCount or the number of calls
 // of the error handler, if there was one installed.
@@ -599,28 +600,28 @@ func (s *Scanner) switch4(tok0, tok1 token.Token, ch2 rune, tok2, tok3 token.Tok
 // set with Init. Token positions are relative to that file
 // and thus relative to the file set.
 //
-func (s *Scanner) Scan() (pos token.Pos, tok token.Token, lit string) {
+func (s *Scanner) Scan() (pos token1.Pos, tok token1.Token, lit string) {
 scanAgain:
 	s.skipWhitespace()
 
-	// current token start
+	// current token1 start
 	pos = s.file.Pos(s.offset)
 
-	// determine token value
+	// determine token1 value
 	insertSemi := false
 	switch ch := s.ch; {
 	case isLetter(ch):
 		lit = s.scanIdentifier()
 		if len(lit) > 1 {
 			// keywords are longer than one letter - avoid lookup otherwise
-			tok = token.Lookup(lit)
+			tok = token1.Lookup(lit)
 			switch tok {
-			case token.IDENT, token.BREAK, token.CONTINUE, token.FALLTHROUGH, token.RETURN:
+			case token1.IDENT, token1.BREAK, token1.CONTINUE, token1.FALLTHROUGH, token1.RETURN:
 				insertSemi = true
 			}
 		} else {
 			insertSemi = true
-			tok = token.IDENT
+			tok = token1.IDENT
 		}
 	case '0' <= ch && ch <= '9':
 		insertSemi = true
@@ -631,29 +632,29 @@ scanAgain:
 		case -1:
 			if s.insertSemi {
 				s.insertSemi = false // EOF consumed
-				return pos, token.SEMICOLON, "\n"
+				return pos, token1.SEMICOLON, "\n"
 			}
-			tok = token.EOF
+			tok = token1.EOF
 		case '\n':
 			// we only reach here if s.insertSemi was
 			// set in the first place and exited early
 			// from s.skipWhitespace()
 			s.insertSemi = false // newline consumed
-			return pos, token.SEMICOLON, "\n"
+			return pos, token1.SEMICOLON, "\n"
 		case '"':
 			insertSemi = true
-			tok = token.STRING
+			tok = token1.STRING
 			lit = s.scanString()
 		case '\'':
 			insertSemi = true
-			tok = token.CHAR
+			tok = token1.CHAR
 			lit = s.scanRune()
 		case '`':
 			insertSemi = true
-			tok = token.STRING
+			tok = token1.STRING
 			lit = s.scanRawString()
 		case ':':
-			tok = s.switch2(token.COLON, token.DEFINE)
+			tok = s.switch2(token1.COLON, token1.DEFINE)
 		case '.':
 			if '0' <= s.ch && s.ch <= '9' {
 				insertSemi = true
@@ -662,43 +663,43 @@ scanAgain:
 				s.next()
 				if s.ch == '.' {
 					s.next()
-					tok = token.ELLIPSIS
+					tok = token1.ELLIPSIS
 				}
 			} else {
-				tok = token.PERIOD
+				tok = token1.PERIOD
 			}
 		case ',':
-			tok = token.COMMA
+			tok = token1.COMMA
 		case ';':
-			tok = token.SEMICOLON
+			tok = token1.SEMICOLON
 			lit = ";"
 		case '(':
-			tok = token.LPAREN
+			tok = token1.LPAREN
 		case ')':
 			insertSemi = true
-			tok = token.RPAREN
+			tok = token1.RPAREN
 		case '[':
-			tok = token.LBRACK
+			tok = token1.LBRACK
 		case ']':
 			insertSemi = true
-			tok = token.RBRACK
+			tok = token1.RBRACK
 		case '{':
-			tok = token.LBRACE
+			tok = token1.LBRACE
 		case '}':
 			insertSemi = true
-			tok = token.RBRACE
+			tok = token1.RBRACE
 		case '+':
-			tok = s.switch3(token.ADD, token.ADD_ASSIGN, '+', token.INC)
-			if tok == token.INC {
+			tok = s.switch3(token1.ADD, token1.ADD_ASSIGN, '+', token1.INC)
+			if tok == token1.INC {
 				insertSemi = true
 			}
 		case '-':
-			tok = s.switch3(token.SUB, token.SUB_ASSIGN, '-', token.DEC)
-			if tok == token.DEC {
+			tok = s.switch3(token1.SUB, token1.SUB_ASSIGN, '-', token1.DEC)
+			if tok == token1.DEC {
 				insertSemi = true
 			}
 		case '*':
-			tok = s.switch2(token.MUL, token.MUL_ASSIGN)
+			tok = s.switch2(token1.MUL, token1.MUL_ASSIGN)
 		case '/':
 			if s.ch == '/' || s.ch == '*' {
 				// comment
@@ -708,7 +709,7 @@ scanAgain:
 					s.offset = s.file.Offset(pos)
 					s.rdOffset = s.offset + 1
 					s.insertSemi = false // newline consumed
-					return pos, token.SEMICOLON, "\n"
+					return pos, token1.SEMICOLON, "\n"
 				}
 				comment := s.scanComment()
 				if s.mode&ScanComments == 0 {
@@ -716,44 +717,44 @@ scanAgain:
 					s.insertSemi = false // newline consumed
 					goto scanAgain
 				}
-				tok = token.COMMENT
+				tok = token1.COMMENT
 				lit = comment
 			} else {
-				tok = s.switch2(token.QUO, token.QUO_ASSIGN)
+				tok = s.switch2(token1.QUO, token1.QUO_ASSIGN)
 			}
 		case '%':
-			tok = s.switch2(token.REM, token.REM_ASSIGN)
+			tok = s.switch2(token1.REM, token1.REM_ASSIGN)
 		case '^':
-			tok = s.switch2(token.XOR, token.XOR_ASSIGN)
+			tok = s.switch2(token1.XOR, token1.XOR_ASSIGN)
 		case '<':
 			if s.ch == '-' {
 				s.next()
-				tok = token.ARROW
+				tok = token1.ARROW
 			} else {
-				tok = s.switch4(token.LSS, token.LEQ, '<', token.SHL, token.SHL_ASSIGN)
+				tok = s.switch4(token1.LSS, token1.LEQ, '<', token1.SHL, token1.SHL_ASSIGN)
 			}
 		case '>':
-			tok = s.switch4(token.GTR, token.GEQ, '>', token.SHR, token.SHR_ASSIGN)
+			tok = s.switch4(token1.GTR, token1.GEQ, '>', token1.SHR, token1.SHR_ASSIGN)
 		case '=':
-			tok = s.switch2(token.ASSIGN, token.EQL)
+			tok = s.switch2(token1.ASSIGN, token1.EQL)
 		case '!':
-			tok = s.switch2(token.NOT, token.NEQ)
+			tok = s.switch2(token1.NOT, token1.NEQ)
 		case '&':
 			if s.ch == '^' {
 				s.next()
-				tok = s.switch2(token.AND_NOT, token.AND_NOT_ASSIGN)
+				tok = s.switch2(token1.AND_NOT, token1.AND_NOT_ASSIGN)
 			} else {
-				tok = s.switch3(token.AND, token.AND_ASSIGN, '&', token.LAND)
+				tok = s.switch3(token1.AND, token1.AND_ASSIGN, '&', token1.LAND)
 			}
 		case '|':
-			tok = s.switch3(token.OR, token.OR_ASSIGN, '|', token.LOR)
+			tok = s.switch3(token1.OR, token1.OR_ASSIGN, '|', token1.LOR)
 		default:
 			// next reports unexpected BOMs - don't repeat
 			if ch != bom {
 				s.error(s.file.Offset(pos), fmt.Sprintf("illegal character %#U", ch))
 			}
 			insertSemi = s.insertSemi // preserve insertSemi info
-			tok = token.ILLEGAL
+			tok = token1.ILLEGAL
 			lit = string(ch)
 		}
 	}

@@ -7,11 +7,12 @@ package parser_test
 import (
 	"fmt"
 	"go/parser"
-	"go/token"
+
+	"gitolite.sgdev.org/testing/token"
 )
 
 func ExampleParseFile() {
-	fset := token.NewFileSet() // positions are relative to fset
+	fset := token1.NewFileSet() // positions are relative to fset
 
 	src := `package foo
 

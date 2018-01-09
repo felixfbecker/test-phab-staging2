@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package token
+package token1
 
 type serializedFile struct {
 	// fields correspond 1:1 to fields with same (lower-case) name in File

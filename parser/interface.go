@@ -9,13 +9,15 @@ package parser
 import (
 	"bytes"
 	"errors"
-	"go/ast"
-	"go/token"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"gitolite.sgdev.org/testing/ast"
+
+	"gitolite.sgdev.org/testing/token"
 )
 
 // If src != nil, readSource converts src to a []byte if possible;
@@ -81,9 +83,9 @@ const (
 // representing the fragments of erroneous source code). Multiple errors
 // are returned via a scanner.ErrorList which is sorted by file position.
 //
-func ParseFile(fset *token.FileSet, filename string, src interface{}, mode Mode) (f *ast.File, err error) {
+func ParseFile(fset *token1.FileSet, filename string, src interface{}, mode Mode) (f *ast.File, err error) {
 	if fset == nil {
-		panic("parser.ParseFile: no token.FileSet provided (fset == nil)")
+		panic("parser.ParseFile: no token1.FileSet provided (fset == nil)")
 	}
 
 	// get source
@@ -136,7 +138,7 @@ func ParseFile(fset *token.FileSet, filename string, src interface{}, mode Mode)
 // returned. If a parse error occurred, a non-nil but incomplete map and the
 // first error encountered are returned.
 //
-func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, mode Mode) (pkgs map[string]*ast.Package, first error) {
+func ParseDir(fset *token1.FileSet, path string, filter func(os.FileInfo) bool, mode Mode) (pkgs map[string]*ast.Package, first error) {
 	fd, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -177,9 +179,9 @@ func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, m
 // be a valid Go (type or value) expression. Specifically, fset must not
 // be nil.
 //
-func ParseExprFrom(fset *token.FileSet, filename string, src interface{}, mode Mode) (ast.Expr, error) {
+func ParseExprFrom(fset *token1.FileSet, filename string, src interface{}, mode Mode) (ast.Expr, error) {
 	if fset == nil {
-		panic("parser.ParseExprFrom: no token.FileSet provided (fset == nil)")
+		panic("parser.ParseExprFrom: no token1.FileSet provided (fset == nil)")
 	}
 
 	// get source
@@ -213,11 +215,11 @@ func ParseExprFrom(fset *token.FileSet, filename string, src interface{}, mode M
 	assert(p.topScope == nil, "unbalanced scopes")
 
 	// If a semicolon was inserted, consume it;
-	// report an error if there's more tokens.
-	if p.tok == token.SEMICOLON && p.lit == "\n" {
+	// report an error if there's more token1s.
+	if p.tok == token1.SEMICOLON && p.lit == "\n" {
 		p.next()
 	}
-	p.expect(token.EOF)
+	p.expect(token1.EOF)
 
 	if p.errors.Len() > 0 {
 		p.errors.Sort()
@@ -232,5 +234,5 @@ func ParseExprFrom(fset *token.FileSet, filename string, src interface{}, mode M
 // in error messages is the empty string.
 //
 func ParseExpr(x string) (ast.Expr, error) {
-	return ParseExprFrom(token.NewFileSet(), "", []byte(x), 0)
+	return ParseExprFrom(token1.NewFileSet(), "", []byte(x), 0)
 }

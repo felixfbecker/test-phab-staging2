@@ -7,11 +7,13 @@ package parser
 import (
 	"bytes"
 	"fmt"
-	"go/ast"
-	"go/token"
 	"os"
 	"strings"
 	"testing"
+
+	"gitolite.sgdev.org/testing/ast"
+
+	"gitolite.sgdev.org/testing/token"
 )
 
 var validFiles = []string{
@@ -23,7 +25,7 @@ var validFiles = []string{
 
 func TestParse(t *testing.T) {
 	for _, filename := range validFiles {
-		_, err := ParseFile(token.NewFileSet(), filename, nil, DeclarationErrors)
+		_, err := ParseFile(token1.NewFileSet(), filename, nil, DeclarationErrors)
 		if err != nil {
 			t.Fatalf("ParseFile(%s): %v", filename, err)
 		}
@@ -44,7 +46,7 @@ func dirFilter(f os.FileInfo) bool { return nameFilter(f.Name()) }
 
 func TestParseDir(t *testing.T) {
 	path := "."
-	pkgs, err := ParseDir(token.NewFileSet(), path, dirFilter, 0)
+	pkgs, err := ParseDir(token1.NewFileSet(), path, dirFilter, 0)
 	if err != nil {
 		t.Fatalf("ParseDir(%s): %v", path, err)
 	}
@@ -96,7 +98,7 @@ func TestParseExpr(t *testing.T) {
 		t.Errorf("ParseExpr(%q): got no error", src)
 	}
 
-	// a valid expression followed by extra tokens is invalid
+	// a valid expression followed by extra token1s is invalid
 	src = "a[i] := x"
 	if _, err := ParseExpr(src); err == nil {
 		t.Errorf("ParseExpr(%q): got no error", src)
@@ -129,7 +131,7 @@ func TestParseExpr(t *testing.T) {
 }
 
 func TestColonEqualsScope(t *testing.T) {
-	f, err := ParseFile(token.NewFileSet(), "", `package p; func f() { x, y, z := x, y, z }`, 0)
+	f, err := ParseFile(token1.NewFileSet(), "", `package p; func f() { x, y, z := x, y, z }`, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -151,7 +153,7 @@ func TestColonEqualsScope(t *testing.T) {
 }
 
 func TestVarScope(t *testing.T) {
-	f, err := ParseFile(token.NewFileSet(), "", `package p; func f() { var x, y, z = x, y, z }`, 0)
+	f, err := ParseFile(token1.NewFileSet(), "", `package p; func f() { var x, y, z = x, y, z }`, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +183,7 @@ var x int
 func f() { L: }
 `
 
-	f, err := ParseFile(token.NewFileSet(), "", src, 0)
+	f, err := ParseFile(token1.NewFileSet(), "", src, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -219,7 +221,7 @@ func f() { L: }
 }
 
 func TestUnresolved(t *testing.T) {
-	f, err := ParseFile(token.NewFileSet(), "", `
+	f, err := ParseFile(token1.NewFileSet(), "", `
 package p
 //
 func f1a(int)
@@ -314,7 +316,7 @@ var imports = map[string]bool{
 func TestImports(t *testing.T) {
 	for path, isValid := range imports {
 		src := fmt.Sprintf("package p; import %s", path)
-		_, err := ParseFile(token.NewFileSet(), "", src, 0)
+		_, err := ParseFile(token1.NewFileSet(), "", src, 0)
 		switch {
 		case err != nil && isValid:
 			t.Errorf("ParseFile(%s): got %v; expected no error", src, err)
@@ -325,7 +327,7 @@ func TestImports(t *testing.T) {
 }
 
 func TestCommentGroups(t *testing.T) {
-	f, err := ParseFile(token.NewFileSet(), "", `
+	f, err := ParseFile(token1.NewFileSet(), "", `
 package p /* 1a */ /* 1b */      /* 1c */ // 1d
 /* 2a
 */
@@ -375,7 +377,7 @@ func ExampleCount() {
 func getField(file *ast.File, fieldname string) *ast.Field {
 	parts := strings.Split(fieldname, ".")
 	for _, d := range file.Decls {
-		if d, ok := d.(*ast.GenDecl); ok && d.Tok == token.TYPE {
+		if d, ok := d.(*ast.GenDecl); ok && d.Tok == token1.TYPE {
 			for _, s := range d.Specs {
 				if s, ok := s.(*ast.TypeSpec); ok && s.Name.Name == parts[0] {
 					if s, ok := s.Type.(*ast.StructType); ok {
@@ -419,7 +421,7 @@ func checkFieldComments(t *testing.T, file *ast.File, fieldname, lead, line stri
 }
 
 func TestLeadAndLineComments(t *testing.T) {
-	f, err := ParseFile(token.NewFileSet(), "", `
+	f, err := ParseFile(token1.NewFileSet(), "", `
 package p
 type T struct {
 	/* F1 lead comment */
@@ -460,13 +462,13 @@ func TestIssue9979(t *testing.T) {
 		"package p; func f() { L: \n}",
 		"package p; func f() { L: \n; }",
 	} {
-		fset := token.NewFileSet()
+		fset := token1.NewFileSet()
 		f, err := ParseFile(fset, "", src, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		var pos, end token.Pos
+		var pos, end token1.Pos
 		ast.Inspect(f, func(x ast.Node) bool {
 			switch s := x.(type) {
 			case *ast.BlockStmt:
@@ -501,7 +503,7 @@ func TestIncompleteSelection(t *testing.T) {
 		"package p; var _ = fmt.",             // at EOF
 		"package p; var _ = fmt.\ntype X int", // not at EOF
 	} {
-		fset := token.NewFileSet()
+		fset := token1.NewFileSet()
 		f, err := ParseFile(fset, "", src, 0)
 		if err == nil {
 			t.Errorf("ParseFile(%s) succeeded unexpectedly", src)
@@ -536,7 +538,7 @@ func TestLastLineComment(t *testing.T) {
 	const src = `package main
 type x int // comment
 `
-	fset := token.NewFileSet()
+	fset := token1.NewFileSet()
 	f, err := ParseFile(fset, "", src, ParseComments)
 	if err != nil {
 		t.Fatal(err)

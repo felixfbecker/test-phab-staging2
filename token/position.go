@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package token
+package token1
 
 import (
 	"fmt"
@@ -377,7 +377,7 @@ func (s *FileSet) AddFile(filename string, base, size int) *File {
 	f := &File{set: s, name: filename, base: base, size: size, lines: []int{0}}
 	base += size + 1 // +1 because EOF also has a position
 	if base < 0 {
-		panic("token.Pos offset overflow (> 2G of source code in file set)")
+		panic("token1.Pos offset overflow (> 2G of source code in file set)")
 	}
 	// add the file to the file set
 	s.base = base

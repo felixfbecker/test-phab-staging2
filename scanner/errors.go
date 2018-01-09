@@ -6,18 +6,19 @@ package scanner
 
 import (
 	"fmt"
-	"go/token"
 	"io"
 	"sort"
+
+	"gitolite.sgdev.org/testing/token"
 )
 
 // In an ErrorList, an error is represented by an *Error.
 // The position Pos, if valid, points to the beginning of
-// the offending token, and the error condition is described
+// the offending token1, and the error condition is described
 // by Msg.
 //
 type Error struct {
-	Pos token.Position
+	Pos token1.Position
 	Msg string
 }
 
@@ -37,7 +38,7 @@ func (e Error) Error() string {
 type ErrorList []*Error
 
 // Add adds an Error with given position and error message to an ErrorList.
-func (p *ErrorList) Add(pos token.Position, msg string) {
+func (p *ErrorList) Add(pos token1.Position, msg string) {
 	*p = append(*p, &Error{pos, msg})
 }
 
@@ -77,7 +78,7 @@ func (p ErrorList) Sort() {
 // RemoveMultiples sorts an ErrorList and removes all but the first error per line.
 func (p *ErrorList) RemoveMultiples() {
 	sort.Sort(p)
-	var last token.Position // initial last.Line is != any legal error line
+	var last token1.Position // initial last.Line is != any legal error line
 	i := 0
 	for _, e := range *p {
 		if e.Pos.Filename != last.Filename || e.Pos.Line != last.Line {
