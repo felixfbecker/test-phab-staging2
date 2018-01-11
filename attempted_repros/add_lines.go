@@ -1,15 +1,11 @@
 package attempted_repros
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 func CallARandomFn() {
-	randomFn()
-	randomFn()
-	randomFn()
-	randomFn()
-	randomFn()
-	randomFn()
-	randomFn()
 	randomFn()
 	randomFn()
 	randomFn()
@@ -96,8 +92,17 @@ func CallARandomFn() {
 	randomFn()
 	randomFn()
 	randomFn()
+	randomFn()
+	randomFn()
+	randomFn()
+	randomFn()
+	randomFn()
+	randomFn()
+	randomFn()
 }
 
 func randomFn() {
 	fmt.Println("random")
+
+	log.Print("random")
 }
